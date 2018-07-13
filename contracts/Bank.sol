@@ -12,7 +12,7 @@ contract Bank {
     address who; //address of person attempting to meet goal
   }
 
-  Wager[] wagers;
+  Wager[] public wagers;
   
   event WagerCreated(uint, uint, Goals, uint, address);
 
@@ -23,8 +23,8 @@ contract Bank {
     wagers.push(Wager(_expiration, _target, _goal, msg.value, msg.sender));
   }
 
-  function getWager(uint _index) returns (address) {
-    return wagers[_index].who;
+  function getWagers() returns (uint) {
+    return wagers.length;
   }
 
 }

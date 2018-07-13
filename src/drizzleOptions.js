@@ -1,6 +1,7 @@
 import ComplexStorage from './../build/contracts/ComplexStorage.json'
 import SimpleStorage from './../build/contracts/SimpleStorage.json'
 import TutorialToken from './../build/contracts/TutorialToken.json'
+import Bank from './../build/contracts/Bank.json'
 
 const drizzleOptions = {
   web3: {
@@ -13,7 +14,8 @@ const drizzleOptions = {
   contracts: [
     ComplexStorage,
     SimpleStorage,
-    TutorialToken
+    TutorialToken,
+    Bank
   ],
   events: {
     SimpleStorage: ['StorageSet']

@@ -22,6 +22,11 @@ class Home extends Component {
             <br/><br/>
           </div>
 
+          <div className="pure-u-1-1 header">
+            <h2>Create a wager</h2>
+            <ContractForm contract="Bank" method="createWager" labels={["Days to goal weight", "Goal weight", "Goal"]} valueLabel="Amount of ether to wager" />
+          </div>
+
           <div className="pure-u-1-1">
             <h2>SimpleStorage</h2>
             <p>This shows a simple ContractData component with no arguments, along with a form to set its value.</p>
