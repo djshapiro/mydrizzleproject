@@ -1,6 +1,8 @@
 pragma solidity ^0.4.24;
 
-contract Bank {
+import "github.com/oraclize/ethereum-api/oraclizeAPI.sol";
+
+contract Bank is usingOraclize{
 
   enum Goals { ChangeWeight }
 
@@ -9,21 +11,25 @@ contract Bank {
     uint target; //target of person attempting to meet goal
     Goals goal; //fitness goal of person
     uint wagerAmount; //amount this person wagered
-    string smartScaleID; //the user's ID on their smart scale
   }
 
   mapping(address => Wager[]) private wagers;
 
-  event WagerCreated(uint, uint, Goals, uint, string);
+  event WagerCreated(uint, uint, Goals, uint);
+  event inCallback(bytes32, string);
 
-  function createWager(uint _expirationInDays, uint _target, Goals _goal, string _smartScaleID) public payable {
+  function createWager(uint _expirationInDays, uint _target, Goals _goal) public payable {
     // In _days, _who will _goal to _target
     //e.g. in 5 days, Jeff will lose weight to 180 lbs
 
-    // Use smart scale ID to check their weight
-
-    wagers[msg.sender].push(Wager(_expirationInDays, _target, _goal, msg.value, _smartScaleID));
-    emit WagerCreated(_expirationInDays, _target, _goal, msg.value, smartScaleID);
+    oraclize_query("URL", "json(http://api.fixer.io/latest?symbols=USD,GBP).rates.GBP");
+    //wagers[msg.sender].push(Wager(_expirationInDays, _target, _goal, msg.value));
+    //emit WagerCreated(_expirationInDays, _target, _goal, msg.value);
+  }
+  
+  function __callback(bytes32 myid, string result) {
+    if (msg.sender != oraclize_cbAddress()) revert();
+    emit inCallback(myid, result);
   }
 
   function getWagers() returns (uint[], uint[], Goals[], uint[]) {
@@ -44,3 +50,4 @@ contract Bank {
   }
 
 }
+
