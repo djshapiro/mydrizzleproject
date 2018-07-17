@@ -7,5 +7,6 @@ module.exports = function(deployer) {
   deployer.deploy(SimpleStorage);
   deployer.deploy(TutorialToken);
   deployer.deploy(ComplexStorage);
+  //deployer.deploy(Bank, { from: accounts[9], gas:6721975, value: 500000000000000000 });
   deployer.deploy(Bank);
 };

@@ -20,14 +20,14 @@ contract Bank is usingOraclize{
   event inCallback(bytes32, string);
 
   function Bank() {
-    OAR = OraclizeAddrResolverI(0x6f485C8BF6fc43eA212E93BBF8ce046C7f1cb475);
+    OAR = OraclizeAddrResolverI(0x6341f14C967270b641E6852235AB2B1dEF3f8E54);
   }
 
   function createWager(uint _expirationInDays, uint _target, Goals _goal, string _smartScaleID) public payable {
     // In _days, _who will _goal to _target
     //e.g. in 5 days, Jeff will lose weight to 180 lbs
 
-    oraclize_query("URL", "json(http://api.fixer.io/latest?symbols=USD,GBP).rates.GBP");
+    oraclize_query("URL", "json(https://api.coinbase.com/v2/prices/ETH-USD/spot).data.amount");
     //wagers[msg.sender].push(Wager(_expirationInDays, _target, _goal, msg.value, _smartScaleID));
     //emit WagerCreated(_expirationInDays, _target, _goal, msg.value, _smartScaleID);
   }
