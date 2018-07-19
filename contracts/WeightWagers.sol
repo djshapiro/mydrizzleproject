@@ -2,7 +2,7 @@ pragma solidity ^0.4.24;
 
 import "installed_contracts/oraclize-api/contracts/usingOraclize.sol";
 
-contract Bank is usingOraclize{
+contract WeightWagers is usingOraclize{
 
   enum Goals { ChangeWeight }
 
@@ -23,11 +23,14 @@ contract Bank is usingOraclize{
   // wait for the oraclized scale data to return
   mapping(bytes32 => Wager) private activeCalls;
 
+  // event for when a user attempts to create a wager
   event WagerCreated(uint, uint, Goals, uint, string);
-  event inCallback(bytes32, string);
+  // event for when the oraclized smart scale returns
+  // data for a wager that a user is trying to create
+  event WagerActivated(Wager);
 
-  function Bank() {
-    OAR = OraclizeAddrResolverI(0x6341f14C967270b641E6852235AB2B1dEF3f8E54);
+  function WeightWagers() {
+    OAR = OraclizeAddrResolverI(0x6A42eefa93Fe2Fc438638db3A69791D9452Ba63D);
   }
 
   function createWager(uint _expirationInDays, uint _target, Goals _goal, string _smartScaleID) public payable {
@@ -40,17 +43,18 @@ contract Bank is usingOraclize{
 
     bytes32 myID = oraclize_query("URL", "json(https://api.coinbase.com/v2/prices/ETH-USD/spot).data.amount");
     activeCalls[myID] = Wager(_expirationInDays, _target, _goal, msg.value, _smartScaleID, msg.sender, 0);
+    emit WagerCreated(_expirationInDays, _target, _goal, msg.value, _smartScaleID);
     //wagers[msg.sender].push(Wager(_expirationInDays, _target, _goal, msg.value, _smartScaleID));
-    //emit WagerCreated(_expirationInDays, _target, _goal, msg.value, _smartScaleID);
   }
   
   function __callback(bytes32 myid, string result) {
     if (msg.sender != oraclize_cbAddress()) revert();
     Wager memory newWager = activeCalls[myid];
-    //newWager.startValue = result;
+    //DJSFIXME Delete wager from activeCalls
+    newWager.startValue = result;
     wagers[newWager.wagerer].push(newWager);
 
-    emit inCallback(myid, result);
+    emit WagerActivated(newWager);
   }
 
   function getWagers() returns (uint[], uint[], Goals[], uint[]) {

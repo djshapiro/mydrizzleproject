@@ -24,7 +24,7 @@ class Home extends Component {
 
           <div className="pure-u-1-1 header">
             <h2>Create a wager</h2>
-            <ContractForm contract="Bank" method="createWager" labels={["Days to goal weight", "Goal weight", "Goal"]} valueLabel="Amount of ether to wager" />
+            <ContractForm contract="WeightWagers" method="createWager" labels={["Days to goal weight", "Goal weight", "Goal"]} valueLabel="Amount of ether to wager" />
           </div>
 
           <div className="pure-u-1-1">
