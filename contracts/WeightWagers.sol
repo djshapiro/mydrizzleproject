@@ -24,13 +24,13 @@ contract WeightWagers is usingOraclize{
   mapping(bytes32 => Wager) private activeCalls;
 
   // event for when a user attempts to create a wager
-  event WagerCreated(uint, uint, Goals, uint, string);
+  event WagerCreated(uint expiration, uint targetValue, Goals goal, uint wagerAmount, string smartScaleID);
   // event for when the oraclized smart scale returns
   // data for a wager that a user is trying to create
-  event WagerActivated(Wager);
+  event WagerActivated(bytes32 myid);
 
   function WeightWagers() {
-    OAR = OraclizeAddrResolverI(0x6A42eefa93Fe2Fc438638db3A69791D9452Ba63D);
+    OAR = OraclizeAddrResolverI(0xaC7630deAbE0Ddd6414b320Ba446B0EfD790a370);
   }
 
   function createWager(uint _expirationInDays, uint _target, Goals _goal, string _smartScaleID) public payable {
@@ -51,10 +51,9 @@ contract WeightWagers is usingOraclize{
     if (msg.sender != oraclize_cbAddress()) revert();
     Wager memory newWager = activeCalls[myid];
     //DJSFIXME Delete wager from activeCalls
-    newWager.startValue = result;
+    newWager.startValue = parseInt(result);
     wagers[newWager.wagerer].push(newWager);
-
-    emit WagerActivated(newWager);
+    emit WagerActivated(myid);
   }
 
   function getWagers() returns (uint[], uint[], Goals[], uint[]) {
