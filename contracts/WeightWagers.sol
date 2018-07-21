@@ -30,7 +30,7 @@ contract WeightWagers is usingOraclize{
   event WagerActivated(bytes32 myid);
 
   function WeightWagers() {
-    OAR = OraclizeAddrResolverI(0xaC7630deAbE0Ddd6414b320Ba446B0EfD790a370);
+    OAR = OraclizeAddrResolverI(0x79FBC344D7644a8DebD395d599588e11Bc8b737C);
   }
 
   function createWager(uint _expirationInDays, uint _target, Goals _goal, string _smartScaleID) public payable {
@@ -47,7 +47,7 @@ contract WeightWagers is usingOraclize{
     //wagers[msg.sender].push(Wager(_expirationInDays, _target, _goal, msg.value, _smartScaleID));
   }
   
-  function __callback(bytes32 myid, string result) {
+  function __callback(bytes32 myid, string result) public {
     if (msg.sender != oraclize_cbAddress()) revert();
     Wager memory newWager = activeCalls[myid];
     //DJSFIXME Delete wager from activeCalls
@@ -56,11 +56,11 @@ contract WeightWagers is usingOraclize{
     emit WagerActivated(myid);
   }
 
-  function getWagers() returns (uint[], uint[], Goals[], uint[]) {
-    uint[] memory expirations = new uint[](wagers[msg.sender].length);
-    uint[] memory targets = new uint[](wagers[msg.sender].length);
-    Goals[] memory goals = new Goals[](wagers[msg.sender].length);
-    uint[] memory values = new uint[](wagers[msg.sender].length);
+  function getWagers() public view returns (uint[] expirations, uint[] targets, Goals[] goals, uint[] values) {
+    expirations = new uint[](wagers[msg.sender].length);
+    targets = new uint[](wagers[msg.sender].length);
+    goals = new Goals[](wagers[msg.sender].length);
+    values = new uint[](wagers[msg.sender].length);
 
     for (uint ii = 0; ii < wagers[msg.sender].length; ii++) {
         Wager memory wager = wagers[msg.sender][ii];
