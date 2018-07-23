@@ -12,32 +12,32 @@ function logWatchPromise(_event) {
   });
 }
 
-//helper function for waiting for the creation and activation of wagers
+/*//helper function for waiting for the creation and activation of wagers
 //DJSFIXME Try this at some point
-function createAndActivateWager(contract, args, txDetails) {
+function createAndActivateWager(wagerContract, args, txDetails) {
 
   //Wait for create
-  const createResponse = await contract.createWager(args.exp, args.target, args.goal, args.scaleID, txDetails);
+  const createResponse = await wagerContract.createWager(args.exp, args.target, args.scaleID, txDetails);
 
   //Wait for activate
-  const logScaleWatcher = logWatchPromise(contract.WagerActivated({ fromBlock: 'latest'} ));
+  const logScaleWatcher = logWatchPromise(wagerContract.WagerActivated({ fromBlock: 'latest'} ));
   const activateResponse = await logScaleWatcher;
 
   //Great!
   return { createResponse, activateResponse };
 }
 
-function verifyWagerAndWaitForEvent(contract, args, txDetails, eventToWaitFor) {
+function verifyWagerAndWaitForEvent(wagerContract, args, txDetails, eventToWaitFor) {
   //Verify
-  const verifyResponse = await contract.verifyWager(args.wagerIndex, txDetails);
+  const verifyResponse = await wagerContract.verifyWager(args.wagerIndex, txDetails);
 
   //Promisify
-  const logScaleWatcher = logWatchPromise(contract[eventToWaitFor]({ fromBlock: 'latest'} ));
+  const logScaleWatcher = logWatchPromise(wagerContract[eventToWaitFor]({ fromBlock: 'latest'} ));
   const eventResponse = await logScaleWatcher;
 
   //Bye!
   return { verifyResponse, eventResponse };
-}
+}*/
 
 contract('WeightWagers', accounts => {
   const owner = accounts[0];
@@ -48,7 +48,7 @@ contract('WeightWagers', accounts => {
     const weightWagers = await WeightWagers.deployed();
 
     //Alice creates a wager.
-    const response = await weightWagers.createWager(30, 210, 0, 'scaleBelongingToAlice', {from: alice});
+    const response = await weightWagers.createWager(30, 20, 'always200Pounds', {from: alice});
     let log = response.logs[0];
     assert.equal(log.event, 'WagerCreated', 'WagerCreated not emitted.');
 
@@ -62,44 +62,22 @@ contract('WeightWagers', accounts => {
     //that she has a wager.
     const aliceWagers = await weightWagers.getWagers({from: alice});
     assert.equal(aliceWagers[0][0], 30, 'alice does not have the correct expiration date on her wager');
-    assert.equal(aliceWagers[1][0], 210, 'alice does not have the correct target weight');
-    assert.equal(aliceWagers[2][0], 0, 'alice does not have the correct goal');
-    assert.equal(aliceWagers[3][0], 0, 'alice does not have the correct amount');
+    assert.equal(aliceWagers[1][0], 20, 'alice does not have the correct target weight');
+    assert.equal(aliceWagers[2][0], 0, 'alice does not have the correct amount');
 
     //Just for a reality check, make sure bob has no wagers.
     const bobWagers = await weightWagers.getWagers();
     assert.deepEqual(bobWagers[0], [], "bob's expiration dates are not an empty array");
     assert.deepEqual(bobWagers[1], [], "bob's target weights are not an empty array");
-    assert.deepEqual(bobWagers[2], [], "bob's goals are not an empty array");
-    assert.deepEqual(bobWagers[3], [], "bob's wager amounts are not an empty array");
+    assert.deepEqual(bobWagers[2], [], "bob's wager amounts are not an empty array");
 
   });
   
-  //DJSFIXME delete this test after it passes a few times
-  it('verify that tests do not carry side effects from other tests', async () => {
-    const weightWagers = await WeightWagers.deployed();
-
-    //Finally, call getWagers() for Alice to ensure
-    //that she has a wager.
-    const aliceWagers = await weightWagers.getWagers({from: alice});
-    assert.deepEqual(aliceWagers[0], [], "alice's expiration dates are not an empty array");
-    assert.deepEqual(aliceWagers[1], [], "alice's target weights are not an empty array");
-    assert.deepEqual(aliceWagers[2], [], "alice's goals are not an empty array");
-    assert.deepEqual(aliceWagers[3], [], "alice's wager amounts are not an empty array");
-
-    //Just for a reality check, make sure bob has no wagers.
-    const bobWagers = await weightWagers.getWagers();
-    assert.deepEqual(bobWagers[0], [], "bob's expiration dates are not an empty array");
-    assert.deepEqual(bobWagers[1], [], "bob's target weights are not an empty array");
-    assert.deepEqual(bobWagers[2], [], "bob's goals are not an empty array");
-    assert.deepEqual(bobWagers[3], [], "bob's wager amounts are not an empty array");
-  });
-
   it('create a wager and attempt to verify it without having lost the weight', async () => {
     const weightWagers = await WeightWagers.deployed();
 
     //Alice creates a wager that expires very far in the future
-    const response = await weightWagers.createWager(10000, 210, 0, 'scaleBelongingToAlice', {from: alice});
+    const response = await weightWagers.createWager(10000, 210, 'scaleBelongingToAlice', {from: alice});
     let log = response.logs[0];
     assert.equal(log.event, 'WagerCreated', 'WagerCreated not emitted.');
 
