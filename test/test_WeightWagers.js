@@ -43,12 +43,15 @@ contract('WeightWagers', accounts => {
   const owner = accounts[0];
   const alice = accounts[1];
   const bob = accounts[2];
-
+  
   it('calling createWager should emit a WagerCreated event follow by a WagerActivated event', async () => {
     const weightWagers = await WeightWagers.deployed();
+    const expiration = 30;
+    const weightChange = 20;
+    const smartScaleId = "always200Pounds";
 
     //Alice creates a wager.
-    const response = await weightWagers.createWager(30, 20, 'always200Pounds', {from: alice});
+    const response = await weightWagers.createWager(expiration, weightChange, smartScaleId, {from: alice});
     let log = response.logs[0];
     assert.equal(log.event, 'WagerCreated', 'WagerCreated not emitted.');
 
@@ -61,8 +64,8 @@ contract('WeightWagers', accounts => {
     //Finally, call getWagers() for Alice to ensure
     //that she has a wager.
     const aliceWagers = await weightWagers.getWagers({from: alice});
-    assert.equal(aliceWagers[0][0], 30, 'alice does not have the correct expiration date on her wager');
-    assert.equal(aliceWagers[1][0], 20, 'alice does not have the correct target weight');
+    assert.equal(aliceWagers[0][0], expiration, 'alice does not have the correct expiration date on her wager');
+    assert.equal(aliceWagers[1][0], weightChange, 'alice does not have the correct target weight');
     assert.equal(aliceWagers[2][0], 0, 'alice does not have the correct amount');
 
     //Just for a reality check, make sure bob has no wagers.
@@ -73,10 +76,11 @@ contract('WeightWagers', accounts => {
 
   });
   
+  
   it('create a wager and attempt to verify it without having lost the weight', async () => {
     const weightWagers = await WeightWagers.deployed();
 
-    //Alice creates a wager that expires very far in the future
+    /*//Alice creates a wager that expires very far in the future
     const response = await weightWagers.createWager(10000, 210, 'scaleBelongingToAlice', {from: alice});
     let log = response.logs[0];
     assert.equal(log.event, 'WagerCreated', 'WagerCreated not emitted.');
@@ -84,9 +88,10 @@ contract('WeightWagers', accounts => {
     //Set up listener so we can pause execution
     //until wager is activated
     const logScaleWatcher = logWatchPromise(weightWagers.WagerActivated({ fromBlock: 'latest'} ));
-    log = await logScaleWatcher;
+    log = await logScaleWatcher;*/
 
     const verifyResponse = await weightWagers.verifyWager(0, {from: alice});
+    let log = verifyResponse.logs[0];
   });
 
   it('create a wager and attempt to verify it after having lost the weight', async () => {

@@ -69,10 +69,10 @@ contract WeightWagers is usingOraclize{
     string memory oraclizeURL = strConcat("json(http://eastern-period-211120.appspot.com/", _smartScaleID, "/0).value");
 
     //DJSFIXME Uncomment this when you're ready to test verification
-    bytes32 myID = oraclize_query("URL", oraclizeURL);
+    //bytes32 myID = oraclize_query("URL", oraclizeURL);
 
     //DJSFIXME Uncomment this when you are just messing around. Delete this before submitting.
-    //bytes32 myID = oraclize_query("URL", "json(https://api.coinbase.com/v2/prices/ETH-USD/spot).data.amount");
+    bytes32 myID = oraclize_query("URL", "json(https://api.coinbase.com/v2/prices/ETH-USD/spot).data.amount");
     wagersBeingActivated[myID] = Wager(_expiration, _desiredWeightChange, msg.value, _smartScaleID, msg.sender, 0);
     emit WagerCreated(_expiration, _desiredWeightChange, msg.value, _smartScaleID);
   }
@@ -114,9 +114,9 @@ contract WeightWagers is usingOraclize{
     Wager memory wagerToVerify = wagers[msg.sender][_wagerIndex];
     //DJSFIXME concat the smartScaleID from the wager onto the URL
     //DJSFIXME if statement to verify that this wager hasn't expired.
-      //DJSFIXME If the wager has expired, delete it from the wagers
-      //DJSFIXME emit WagerExpired(msg.sender, wagerToVerify.wagerAmount);
-      //DJSFIXME If the wager has not expired, do the following.
+    //DJSFIXME If the wager has expired, delete it from the wagers
+    //DJSFIXME emit WagerExpired(msg.sender, wagerToVerify.wagerAmount);
+    //DJSFIXME If the wager has not expired, do the following.
     bytes32 myID = oraclize_query("URL", "json(https://api.coinbase.com/v2/prices/ETH-USD/spot).data.amount");
     wagersBeingVerified[myID] = VerifyingWager(msg.sender, _wagerIndex);
     emit WagerBeingVerified(msg.sender, _wagerIndex);
