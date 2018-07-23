@@ -8,11 +8,11 @@ contract WeightWagers is usingOraclize{
 
   struct Wager {
     uint expiration; //timestamp after which the wager needs to be evaluated
-    uint targetValue; //target weight of wagerer
+    uint desiredWeightChange; //amount of weight wagerer wants to lose
     uint wagerAmount; //amount this person wagered
     string smartScaleID; //The user's "credentials" for their smart scale
     address wagerer; //the address of the person making the wager
-    uint startValue; //the starting weight of the wagerer
+    uint startWeight; //the starting weight of the wagerer
   }
 
   struct VerifyingWager {
@@ -36,7 +36,7 @@ contract WeightWagers is usingOraclize{
   mapping(bytes32 => VerifyingWager) private wagersBeingVerified;
 
   // event for when a user attempts to create a wager
-  event WagerCreated(uint expiration, uint targetValue, uint wagerAmount, string smartScaleID);
+  event WagerCreated(uint expiration, uint desiredWeightChange, uint wagerAmount, string smartScaleID);
   // event for when the oraclized smart scale returns
   // data for a wager that a user is trying to create
   event WagerActivated(address wagerer, uint wagerAmount);
@@ -61,7 +61,7 @@ contract WeightWagers is usingOraclize{
   }
 
   //The user calls this function when they want to create a wager
-  function createWager(uint _expiration, uint _target, string _smartScaleID) public payable {
+  function createWager(uint _expiration, uint _desiredWeightChange, string _smartScaleID) public payable {
     //This payable function should automatically receive the ether
     //which is fine! because now if there are problems we can just revert.
     //But we need to remember to send the ether back in case the callback fails for some reason.
@@ -69,30 +69,32 @@ contract WeightWagers is usingOraclize{
     string memory oraclizeURL = strConcat("json(http://eastern-period-211120.appspot.com/", _smartScaleID, "/0).value");
 
     //DJSFIXME Uncomment this when you're ready to test verification
-    //bytes32 myID = oraclize_query("URL", oraclizeURL);
-    bytes32 myID = oraclize_query("URL", "json(https://api.coinbase.com/v2/prices/ETH-USD/spot).data.amount");
-    wagersBeingActivated[myID] = Wager(_expiration, _target, msg.value, _smartScaleID, msg.sender, 0);
-    emit WagerCreated(_expiration, _target, msg.value, _smartScaleID);
+    bytes32 myID = oraclize_query("URL", oraclizeURL);
+
+    //DJSFIXME Uncomment this when you are just messing around. Delete this before submitting.
+    //bytes32 myID = oraclize_query("URL", "json(https://api.coinbase.com/v2/prices/ETH-USD/spot).data.amount");
+    wagersBeingActivated[myID] = Wager(_expiration, _desiredWeightChange, msg.value, _smartScaleID, msg.sender, 0);
+    emit WagerCreated(_expiration, _desiredWeightChange, msg.value, _smartScaleID);
   }
   
   function __callback(bytes32 myid, string result) public {
 
     if (msg.sender != oraclize_cbAddress()) revert();
-    //DJSFIXME If statement to see where myid is.
-    //DJSFIXME If myid is in wagersBeingActivated
-    Wager memory newWager = wagersBeingActivated[myid];
-    //DJSFIXME Delete wager from wagersBeingActivated
-    newWager.startValue = parseInt(result);
-    wagers[newWager.wagerer].push(newWager);
-    emit WagerActivated(newWager.wagerer, newWager.wagerAmount);
-    //DJSFIXME Maybe include a modifier to delete the wager from wagersBeingActivated
-    //         on function exit no matter what, so that wagersBeingActivated doesn't
-    //         slowly bloat into tons of data that no one needs
+    if (wagersBeingActivated[myid].expiration != 0) {
+      Wager memory newWager = wagersBeingActivated[myid];
+      //DJSFIXME Delete wager from wagersBeingActivated
+      newWager.startWeight = parseInt(result);
+      wagers[newWager.wagerer].push(newWager);
+      emit WagerActivated(newWager.wagerer, newWager.wagerAmount);
+      //DJSFIXME Maybe include a modifier to delete the wager from wagersBeingActivated
+      //         on function exit no matter what, so that wagersBeingActivated doesn't
+      //         slowly bloat into tons of data that no one needs
+    }
 
     //DJSFIXME If myid is in wagersBeingVerified
     //VerifyingWager memory myVerifyingWager = wagersBeingVerified[myid];
     //Wager memory wagerToVerify = wagers[myVerifyingWager.wagerer][myVerifyingWager.wagerIndex];
-    //If parseInt(result) < wagerToVerify.startValue;
+    //If parseInt(result) <= (wagerToVerify.startWeight - wagerToVerify.desiredWeightChange);
     //DJSFIXME then Send wagerToVerify.value * rewardMultipier / 100 to wagerToVerify.wagerer.
     //DJSFIXME emit WagerVerified(wagerToVerify.wagerer, wagerToVerify.wagerAmount);
     //DJSFIXME else (they didn't lose the weight)
@@ -120,19 +122,19 @@ contract WeightWagers is usingOraclize{
     emit WagerBeingVerified(msg.sender, _wagerIndex);
   }
 
-  function getWagers() public view returns (uint[] expirations, uint[] targets, uint[] values) {
+  function getWagers() public view returns (uint[] expirations, uint[] desiredWeightChanges, uint[] values) {
     expirations = new uint[](wagers[msg.sender].length);
-    targets = new uint[](wagers[msg.sender].length);
+    desiredWeightChanges = new uint[](wagers[msg.sender].length);
     values = new uint[](wagers[msg.sender].length);
 
     for (uint ii = 0; ii < wagers[msg.sender].length; ii++) {
         Wager memory wager = wagers[msg.sender][ii];
         expirations[ii] = wager.expiration;
-        targets[ii] = wager.targetValue;
+        desiredWeightChanges[ii] = wager.desiredWeightChange;
         values[ii] = wager.wagerAmount;
     }
 
-    return (expirations, targets, values);
+    return (expirations, desiredWeightChanges, values);
   }
 
 }
