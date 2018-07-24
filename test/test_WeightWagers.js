@@ -1,4 +1,4 @@
-const WeightWagers = artifacts.require('./WeightWagers.sol');
+const WeightWagers = artifacts.require('WeightWagers');
 
 function logWatchPromise(_event) {
   return new Promise((resolve, reject) => {
@@ -44,6 +44,7 @@ contract('WeightWagers', accounts => {
   const alice = accounts[1];
   const bob = accounts[2];
   
+  
   it('calling createWager should emit a WagerCreated event follow by a WagerActivated event', async () => {
     const weightWagers = await WeightWagers.deployed();
     const expiration = 30;
@@ -76,22 +77,21 @@ contract('WeightWagers', accounts => {
 
   });
   
-  
   it('create a wager and attempt to verify it without having lost the weight', async () => {
     const weightWagers = await WeightWagers.deployed();
 
-    /*//Alice creates a wager that expires very far in the future
-    const response = await weightWagers.createWager(10000, 210, 'scaleBelongingToAlice', {from: alice});
+    //Alice creates a wager that expires very far in the future
+    const response = await weightWagers.createWager(10000, 20, 'always200Pounds', {from: alice});
     let log = response.logs[0];
     assert.equal(log.event, 'WagerCreated', 'WagerCreated not emitted.');
 
     //Set up listener so we can pause execution
     //until wager is activated
     const logScaleWatcher = logWatchPromise(weightWagers.WagerActivated({ fromBlock: 'latest'} ));
-    log = await logScaleWatcher;*/
+    log = await logScaleWatcher;
 
     const verifyResponse = await weightWagers.verifyWager(0, {from: alice});
-    let log = verifyResponse.logs[0];
+    log = verifyResponse.logs[0];
   });
 
   it('create a wager and attempt to verify it after having lost the weight', async () => {
